@@ -11,6 +11,7 @@ program
   .option("--envFile <filename>", "Environment file to update", ".env")
   .option("--permissions <mode>", "File permissions in octal (e.g. 600)", "644")
   .option("--modulus <length>", "RSA modulus length", "2048")
+  .option("--log <level>", "Logging level (default: minimal, use 'all' for verbose)", "minimal")
   .parse(process.argv);
 
 const options = program.opts();
@@ -20,6 +21,7 @@ const config = {
   envFileName: options.envFile,
   filePermissions: parseInt(options.permissions, 8),
   modulusLength: parseInt(options.modulus, 10),
+  logLevel: options.log === "all" ? "trace" : "warn",
 };
 
 const generator = new SecureKeyGenerator(config);

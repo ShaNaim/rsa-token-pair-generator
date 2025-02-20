@@ -1,3 +1,4 @@
+import pino from "pino";
 /**
  * Interface representing a key pair with its passphrase.
  */
@@ -39,5 +40,24 @@ export interface SecureKeyGeneratorConfig {
   keyDirectory?: string;
   filePermissions?: number;
   envFileName?: string;
-  modulusLength?: number; // Allow customizing the RSA key size
+  modulusLength?: number;
+  logLevel?: string;
 }
+
+// Interface for the log entry structure
+export interface LogEntry {
+  time: string;
+  logLevel: string;
+  logMessage: string;
+}
+
+// Define custom log function type
+export type LogFn = (msg: string, ...args: any[]) => void;
+
+// Custom logger interface that includes the step method
+export interface StepLogger extends pino.Logger {
+  step: LogFn;
+}
+
+// Type for including both built-in and custom levels
+export type LogLevels = pino.Level | "step";
