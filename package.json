@@ -18,7 +18,7 @@
     "cli",
     "npm"
   ],
-  "author": "shanaim2k15@gmail.com",
+  "author": "ShaNaim",
   "license": "MIT",
   "homepage": "https://github.com/ShaNaim/rsa-token-pair-generator#readme",
   "scripts": {
@@ -28,6 +28,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "watch": "tsc -w",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
