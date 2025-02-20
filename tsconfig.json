@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "es2016",
+        "module": "Node16",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "moduleResolution": "Node16",
+        "outDir": "dist",
+        "baseUrl": "./",
+        "paths": {
+            "@errors/*": ["src/errors/*"],
+            "@config/*": ["src/config/*"],
+            "@common/*": ["src/common/*"],
+            "@middlewares/*": ["src/middlewares/*"],
+            "@modules/*": ["src/modules/*"],
+            "@utils/*": ["src/utils/*"],
+            "@provider/*": ["src/utils/provider/*"]
+        },
+        "typeRoots": ["./src/utils/types"]
+    },
+    "exclude": ["node_modules/", "dist/**/*"],
+    "include": ["src/**/*.ts", "eslint.config.mjs"]
+}

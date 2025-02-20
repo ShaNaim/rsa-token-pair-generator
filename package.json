@@ -1,0 +1,44 @@
+{
+  "name": "rsa-token-pair-generator",
+  "version": "1.0.0",
+  "description": "A secure RSA token pair generator CLI and library for generating and storing RSA keys.",
+  "main": "dist/index.js",
+  "bin": {
+    "generate-token": "dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShaNaim/rsa-token-pair-generator.git"
+  },
+  "keywords": [
+    "rsa",
+    "token",
+    "key-generator",
+    "security",
+    "cli",
+    "npm"
+  ],
+  "author": "shanaim2k15@gmail.com",
+  "license": "MIT",
+  "homepage": "https://github.com/ShaNaim/rsa-token-pair-generator#readme",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node src/cli.ts",
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "commander": "^10.0.0",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2"
+  }
+}
