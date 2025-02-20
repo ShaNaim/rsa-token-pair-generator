@@ -2,24 +2,7 @@ import pino from "pino";
 import pretty from "pino-pretty";
 import fs from "fs/promises";
 import path from "path";
-
-// Interface for the log entry structure
-interface LogEntry {
-  time: string;
-  logLevel: string;
-  logMessage: string;
-}
-
-// Define custom log function type
-type LogFn = (msg: string, ...args: any[]) => void;
-
-// Custom logger interface that includes the step method
-interface StepLogger extends pino.Logger {
-  step: LogFn;
-}
-
-// Type for including both built-in and custom levels
-type LogLevels = pino.Level | "step";
+import { LogEntry, LogLevels, StepLogger } from "./interface";
 
 // Define custom levels
 const customLevels = {
