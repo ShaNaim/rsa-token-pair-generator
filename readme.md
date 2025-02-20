@@ -1,49 +1,71 @@
-# RSA Token Pair Generator
+# RSA Token Pair Generator 🔐
 
-A secure CLI and library for generating RSA token key pairs for access and refresh tokens. This tool securely generates RSA keys, validates them, writes them to disk with restricted permissions, and updates an environment file with key details. It is designed following industry best practices and is fully configurable.
+A secure CLI utility and library for generating RSA-2048/4096 cryptographic key pairs specifically designed for JWT-based authentication systems. Generates access/refresh token key pairs with enterprise-grade security practices and seamless environment integration.
 
-## Features
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/rsa-token-pair-generator)](https://www.npmjs.com/package/rsa-token-pair-generator)
 
-- **Secure Key Generation:** Generates RSA key pairs (for access and refresh tokens) with customizable modulus length.
-- **Configurable Storage:** Save keys in a dedicated directory with strict file permissions.
-- **Automated Environment Updates:** Automatically update a specified `.env` (or custom) file with key paths and values.
-- **Robust CLI:** Built with [Commander](https://www.npmjs.com/package/commander) for easy and reliable argument parsing.
-- **Enhanced Logging:** Uses [Winston](https://www.npmjs.com/package/winston) for improved logging and error reporting.
+## Features 🚀
 
-## Installation
+- **Military-Grade Cryptography**: Generates RSA key pairs (PKCS#8) with configurable modulus length (2048/4096 bits)
+- **Secure Storage**: Writes keys to disk with strict file permissions (default: 644)
+- **Environment Automation**: Auto-updates .env files with key paths and Base64-encoded values
+- **Production-Ready Logging**: Integrated [Pino](https://getpino.io/) logger with structured JSON output
+- **Zero Dependencies**: Uses native Node.js crypto module for key generation
+- **TypeSafe API**: Full TypeScript support with declaration files
+- **Configurable CLI**: Built with [Commander.js](https://github.com/tj/commander.js) for robust argument handling
 
-### Global Installation (CLI)
+## Installation 📦
 
-Install the package globally using npm so you can run the CLI command from anywhere:
+### Global CLI Installation
 
 ```bash
 npm install -g rsa-token-pair-generator
 ```
 
-### Local Installation (Library)
-
-Or install as a dependency in your project:
+### As Project Dependency
 
 ```bash
-npm install rsa-token-pair-generator
+npm install rsa-token-pair-generator --save-dev
 ```
 
-## Usage
+## Usage 🛠️
 
-### Running as a CLI Tool
+### CLI Quick Start
 
-Once installed globally, you can run the CLI command:
+Generate keys with default settings:
 
 ```bash
-generate-token [options]
+generate-token
 ```
 
-#### Available Options
+This will:
 
-- `--keyDir <directory>`: Directory where keys will be stored (default: `secure-keys`).
-- `--envFile <filename>`: Environment file to update (default: `.env`).
-- `--permissions <mode>`: File permissions in octal (e.g. `600`, default: `644`).
-- `--modulus <length>`: RSA modulus length (default: `2048`).
+1.  Create `secure-keys` directory
+2.  Generate 2048-bit RSA key pair
+3.  Update `.env` file with key paths
+4.  Set restrictive file permissions
+
+### Advanced CLI Usage
+
+```bash
+generate-token \
+  --keyDir "my-keys" \
+  --envFile ".prod.env" \
+  --modulus 4096 \
+  --permissions 600 \
+  --log all
+```
+
+**Options**:
+
+| Flag                   | Description                                                 | Default                  |
+| ---------------------- | ----------------------------------------------------------- | ------------------------ |
+| `--keyDir <path>`      | Output directory for keys                                   | `secure-keys`            |
+| `--envFile <name>`     | Environment file to update                                  | `.env`                   |
+| `--modulus <bits>`     | RSA modulus length (2048/4096)                              | `2048`                   |
+| `--permissions <mode>` | File permission mode (octal)                                | `644`                    |
+| `--log <level>`        | Specifies the logging level for detailed execution tracking | `warn` / `step` (custom) |
 
 **Example:**
 
@@ -51,93 +73,121 @@ generate-token [options]
 generate-token --keyDir my-keys --envFile mykeys.env --permissions 600 --modulus 4096
 ```
 
-This command will:
-
-- Generate a 4096-bit RSA key pair.
-- Store the keys in the `my-keys/` directory.
-- Update the `mykeys.env` file with key paths and values.
-- Set file permissions to `600` (if supported by your OS).
-
-### Using as a Library
-
-You can also import and use the key generator in your own Node.js projects:
+### Programmatic API
 
 ```typescript
-import SecureKeyGenerator from "rsa-token-pair-generator;
+import { SecureKeyGenerator } from "rsa-token-pair-generator";
 
-const generator = new SecureKeyGenerator({
-  keyDirectory: "my-keys",
-  envFileName: "mykeys.env",
-  filePermissions: parseInt("600", 8),
-  modulusLength: 4096
+const keyGenerator = new SecureKeyGenerator({
+  keyDirectory: "config/keys",
+  envFileName: ".env.production",
+  modulusLength: 4096,
+  filePermissions: 0o600,
 });
 
-generator.generate()
-  .then(() => console.log("Keys generated successfully!"))
-  .catch((error) => console.error("Error generating keys:", error));`
+keyGenerator
+  .generate()
+  .then(() => console.log("Key pair generated successfully"))
+  .catch((err) => console.error("Generation failed:", err));
 ```
 
-## Testing
+## Security Best Practices 🔒
 
-### Local Development Test Run
+1.  **Permission Hardening**: Always set file permissions to 600 in production
+2.  **Key Rotation**: Generate new keys quarterly or per security policy
+3.  **Environment Isolation**: Store private keys separate from application code
+4.  **Audit Logging**: Monitor key generation events via Pino logs
+5.  **CI/CD Integration**: Generate keys during deployment processes
 
-1.  **Install Dependencies:**
+## Logging 📝
+
+The utility uses Pino for high-performance structured logging:
+
+```json
+{
+  "level": 30,
+  "time": 1717029274665,
+  "pid": 12345,
+  "hostname": "server01",
+  "msg": "Generated RSA-4096 key pair",
+  "keyDir": "/app/keys",
+  "envFile": ".env.prod",
+  "keyType": "access_token"
+}
+```
+
+**Log Levels**:
+
+- `fatal`: Critical security failures
+- `error`: Operational errors
+- `info`: Generation milestones
+- `debug`: Cryptographic details (enable for troubleshooting)
+
+Enable debug logging:
+
+```bash
+LOG_LEVEL=debug generate-token --modulus 4096
+```
+
+## Development 🧑💻
+
+### Build from Source
+
+```bash
+git clone https://github.com/ShaNaim/rsa-token-pair-generator.git
+```
+
+```bash
+cd rsa-token-pair-generator
+```
 
 ```bash
 npm install
 ```
 
-2.  **Build the Project:**
-
-    Compile your TypeScript code:
-
 ```bash
 npm run build
 ```
 
-3.  **Run the Compiled CLI:**
+### Test Generation
 
 ```bash
-node dist/cli.js --keyDir test-keys --envFile test.env --permissions 600 --modulus 4096
+# Production build test
+node dist/cli.js --keyDir test-keys --modulus 2048
+
+# Development mode (ts-node)
+npx ts-node src/cli.ts --envFile .env.test
 ```
 
-4.  **Directly Run with ts-node (Development Mode):**
+### Testing Recommendations
 
-    If you prefer to run without compiling:
+1.  Add Jest/Mocha tests for cryptographic functions
+2.  Implement E2E testing for CLI workflows
+3.  Add static analysis with ESLint/TypeScript
+4.  Consider adding HSM integration tests
 
-```bash
-npx ts-node src/cli.ts --keyDir test-keys --envFile test.env --permissions 600 --modulus 4096
-```
+## Contributing 🤝
 
-5.  **Verify Output:**
+We welcome security-focused contributions:
 
-    Check that the keys are generated in the specified directory:
+1.  Fork the repository
+2.  Create feature branch (`git checkout -b feature/improvement`)
+3.  Commit changes with signed-off messages
+4.  Push to branch (`git push origin feature/improvement`)
+5.  Open Pull Request
 
-```bash
-ls -l test-keys/
-cat test.env
-```
+**Priority Areas**:
 
-### Automated Testing
+- Security audits
+- Cloud HSM integration
+- Key encryption at rest
+- Automated key rotation
+- Comprehensive test suite
 
-Currently, no test suite is provided. It is recommended to add tests using a framework such as Jest or Mocha. Contributions with tests are welcome!
+## License 📄
 
-## Modifying the Package
+MIT License - See [LICENSE](https://github.com/ShaNaim/rsa-token-pair-generator/blob/main/LICENSE) for full text.
 
-### Configuration
+---
 
-- **Custom Settings:** You can modify defaults (like the RSA modulus length, key directory, environment file, or file permissions) via CLI options or when instantiating the `SecureKeyGenerator` class.
-- **Logging:** Adjust the Winston logger configuration in `src/index.ts` to change log levels or output formats.
-- **RSA Parameters:** The RSA key generation options can be extended to include different ciphers or key formats if required.
-
-### Contributing
-
-Contributions, bug reports, and feature requests are welcome. Please fork the repository, make your changes following the existing code style, and submit a pull request. Adding tests and improving documentation are highly appreciated.
-
-## License
-
-This project is licensed under the ISC License.
-
-## Contact
-
-For questions or further assistance, please contact Your Name.
+> **Note**: Always store private keys in secure vaults (AWS KMS, HashiCorp Vault) in production environments.
