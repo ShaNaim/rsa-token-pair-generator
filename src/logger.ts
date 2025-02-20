@@ -6,7 +6,7 @@ import { LogEntry, LogLevels, StepLogger } from "./interface";
 
 // Define custom levels
 const customLevels = {
-  step: 35, // Between info (30) and warn (40)
+  step: 50, // Between info (30) and warn (40)
 } as const;
 
 class AsyncFileWriter {
@@ -79,7 +79,10 @@ class AsyncFileWriter {
 }
 
 // Create and configure the logger
-const createLogger = (logFilePath: string = path.join(process.cwd(), "logs", "log.json")): StepLogger => {
+const createLogger = (
+  logLevel?: string,
+  logFilePath: string = path.join(process.cwd(), "logs", "log.json")
+): StepLogger => {
   const fileWriter = new AsyncFileWriter(logFilePath);
 
   // Configure pino-pretty stream
@@ -118,7 +121,7 @@ const createLogger = (logFilePath: string = path.join(process.cwd(), "logs", "lo
     {
       customLevels: customLevels,
       useOnlyCustomLevels: false,
-      level: "warn",
+      level: logLevel || "warn",
       formatters: {
         level: (label: string) => ({ level: label }),
       },
@@ -130,5 +133,5 @@ const createLogger = (logFilePath: string = path.join(process.cwd(), "logs", "lo
 };
 
 // Export singleton instance
-export const logger = createLogger();
+export const logger = createLogger;
 export type { LogEntry, StepLogger as CustomLogger, LogLevels };

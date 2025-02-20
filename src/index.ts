@@ -2,7 +2,7 @@ import fs from "fs";
 import crypto from "crypto";
 import path from "path";
 import dotenv from "dotenv";
-import winston from "winston";
+import { logger, type CustomLogger } from "./logger";
 import { SecureKeyGeneratorConfig, KeyPair, KeyGenerationOptions, TokenKeyPairs } from "./interface";
 
 dotenv.config();
@@ -16,7 +16,7 @@ export class SecureKeyGenerator {
   private readonly keyPath: string;
   private readonly envFileName: string;
   private readonly modulusLength: number;
-  private readonly logger: winston.Logger;
+  private readonly logger: CustomLogger;
 
   constructor(config: SecureKeyGeneratorConfig = {}) {
     this.SECURE_FILE_PERMISSIONS = config.filePermissions || 0o644;
@@ -25,15 +25,11 @@ export class SecureKeyGenerator {
     this.envFileName = config.envFileName || ".env";
     this.modulusLength = config.modulusLength || 2048;
 
-    this.logger = winston.createLogger({
-      level: "info",
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
-      ),
-      transports: [new winston.transports.Console()],
-    });
+    const logLevel = config.logLevel;
+
+    this.logger = logger(logLevel);
+
+    this.logger.info(`Initialized SecureKeyGenerator with minimal logging. Use '--log all' for detailed logs.`);
 
     this.logger.info(
       `Initialized SecureKeyGenerator with keyDirectory: '${this.KEY_DIRECTORY}', envFileName: '${
@@ -240,7 +236,7 @@ export class SecureKeyGenerator {
         .map(([key, value]) => `${key}="${value.replace(/\n/g, "\\n")}"`)
         .join("\n");
 
-      this.logger.info(`Writing updated environment variables to '${this.envFileName}'.`);
+      this.logger.step(`Writing updated environment variables to '${this.envFileName}'.`);
       await this.writeFileWithFallback(this.envFileName, envContent, this.SECURE_FILE_PERMISSIONS);
 
       this.logger.info("All keys have been generated and saved successfully.");
@@ -254,7 +250,7 @@ export class SecureKeyGenerator {
    * Prints security instructions to the console.
    */
   private printSecurityInstructions(): void {
-    this.logger.info(`
+    this.logger.step(`
 Security Notes:
 1. Key files have been generated in '${this.keyPath}'
 2. Both file paths and actual keys are stored in '${this.envFileName}'
@@ -274,14 +270,14 @@ Note: If you see any permission warnings, consider manually restricting file per
    * Public method to generate RSA token key pairs.
    */
   public async generate(): Promise<void> {
-    this.logger.info("Starting RSA token key pair generation process.");
+    this.logger.step("Starting RSA token key pair generation process.");
     try {
       const tokenKeys: TokenKeyPairs = {
         access: this.generateRSAKeyPair("access"),
         refresh: this.generateRSAKeyPair("refresh"),
       };
       await this.saveKeys(tokenKeys);
-      this.logger.info("RSA token key pair generation process completed successfully.");
+      this.logger.step("RSA token key pair generation process completed successfully.");
     } catch (error) {
       this.logger.error(`Error during key generation: ${error instanceof Error ? error.message : "Unknown error"}`);
       process.exit(1);
