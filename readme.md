@@ -35,7 +35,7 @@ npm install rsa-token-pair-generator
 Once installed globally, you can run the CLI command:
 
 ```bash
-`generate-token [options]`
+generate-token [options]
 ```
 
 #### Available Options
@@ -48,7 +48,7 @@ Once installed globally, you can run the CLI command:
 **Example:**
 
 ```bash
-`generate-token --keyDir my-keys --envFile mykeys.env --permissions 600 --modulus 4096`
+generate-token --keyDir my-keys --envFile mykeys.env --permissions 600 --modulus 4096
 ```
 
 This command will:
@@ -92,7 +92,7 @@ npm install
     Compile your TypeScript code:
 
 ```bash
-npm run build`
+npm run build
 ```
 
 3.  **Run the Compiled CLI:**
@@ -106,7 +106,7 @@ node dist/cli.js --keyDir test-keys --envFile test.env --permissions 600 --modul
     If you prefer to run without compiling:
 
 ```bash
-npx ts-node src/cli.ts --keyDir test-keys --envFile test.env --permissions 600 --modulus 4096`
+npx ts-node src/cli.ts --keyDir test-keys --envFile test.env --permissions 600 --modulus 4096
 ```
 
 5.  **Verify Output:**
