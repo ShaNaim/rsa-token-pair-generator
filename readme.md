@@ -1,4 +1,4 @@
-# RSA Token Pair Generator 🔐
+# JWT Token Pair Generator 🔐
 
 A secure CLI utility and library for generating RSA-2048/4096 cryptographic key pairs specifically designed for JWT-based authentication systems. Generates access/refresh token key pairs with enterprise-grade security practices and seamless environment integration.
 
@@ -20,13 +20,13 @@ A secure CLI utility and library for generating RSA-2048/4096 cryptographic key 
 ### Global CLI Installation
 
 ```bash
-npm install -g rsa-token-pair-generator
+npm install jwt-token-pair-generator
 ```
 
 ### As Project Dependency
 
 ```bash
-npm install rsa-token-pair-generator --save-dev
+npm install jwt-token-pair-generator --save-dev
 ```
 
 ## Usage 🛠️
