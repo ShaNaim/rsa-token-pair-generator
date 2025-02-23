@@ -1,6 +1,6 @@
 {
   "name": "jwt-token-pair-generator",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A secure RSA token pair generator CLI and library for generating and storing RSA keys for JWT",
   "main": "dist/index.js",
   "bin": {
