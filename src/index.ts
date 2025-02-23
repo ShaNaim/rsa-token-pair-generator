@@ -12,16 +12,18 @@ dotenv.config();
  */
 export class SecureKeyGenerator {
   private readonly SECURE_FILE_PERMISSIONS: number;
-  private readonly KEY_DIRECTORY: string;
-  private readonly keyPath: string;
+  private readonly KEY_DIRECTORY?: string | null;
+  private readonly keyPath?: string;
   private readonly envFileName: string;
   private readonly modulusLength: number;
   private readonly logger: CustomLogger;
 
   constructor(config: SecureKeyGeneratorConfig = {}) {
     this.SECURE_FILE_PERMISSIONS = config.filePermissions || 0o644;
-    this.KEY_DIRECTORY = config.keyDirectory || "secure-keys";
-    this.keyPath = path.join(process.cwd(), this.KEY_DIRECTORY);
+    if (config.keyDirectory) {
+      this.KEY_DIRECTORY = config.keyDirectory || "secure-keys";
+      this.keyPath = path.join(process.cwd(), this.KEY_DIRECTORY);
+    }
     this.envFileName = config.envFileName || ".env";
     this.modulusLength = config.modulusLength || 2048;
 
@@ -46,9 +48,6 @@ export class SecureKeyGenerator {
   private generateRSAKeyPair(keyType: "access" | "refresh"): KeyPair {
     this.logger.info(`Starting generation of RSA key pair for '${keyType}' token.`);
     try {
-      const passphrase = this.generateSecurePassphrase();
-      this.logger.info(`Secure passphrase generated for '${keyType}' token.`);
-
       const options: KeyGenerationOptions = {
         modulusLength: this.modulusLength,
         publicKeyEncoding: {
@@ -58,17 +57,19 @@ export class SecureKeyGenerator {
         privateKeyEncoding: {
           type: "pkcs8",
           format: "pem",
-          cipher: "aes-256-cbc",
-          passphrase,
         },
       };
 
-      this.logger.info(`Generating RSA keys for '${keyType}' token with modulusLength: ${this.modulusLength}.`);
+      this.logger.info(
+        `Generating unencrypted RSA keys for '${keyType}' token with modulusLength: ${this.modulusLength}.`
+      );
       const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", options);
       this.logger.info(`RSA keys generated for '${keyType}' token. Proceeding with validation.`);
-      this.validateKeyPair(publicKey, privateKey, passphrase);
+
+      this.validateKeyPair(publicKey, privateKey);
       this.logger.info(`RSA key pair for '${keyType}' token validated successfully.`);
-      return { publicKey, privateKey, passphrase };
+
+      return { publicKey, privateKey };
     } catch (error) {
       throw new Error(`${keyType} key generation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
@@ -89,21 +90,22 @@ export class SecureKeyGenerator {
    * Validates the generated key pair by signing and verifying a test message.
    * @param publicKey - The public key.
    * @param privateKey - The private key.
-   * @param passphrase - The passphrase for the private key.
    */
-  private validateKeyPair(publicKey: string, privateKey: string, passphrase: string): void {
+  private validateKeyPair(publicKey: string, privateKey: string): void {
     this.logger.info("Validating generated key pair.");
     try {
       const testMessage = crypto.randomBytes(32);
-      const signature = crypto.sign("sha256", testMessage, {
-        key: privateKey,
-        passphrase,
-      });
+
+      // Sign the test message using the unencrypted private key
+      const signature = crypto.sign("sha256", testMessage, privateKey);
+
+      // Verify the signature using the public key
       const isValid = crypto.verify("sha256", testMessage, publicKey, signature);
 
       if (!isValid) {
         throw new Error("Key pair validation failed");
       }
+
       this.logger.info("Key pair validation succeeded.");
     } catch (error) {
       throw new Error(`Key validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -116,6 +118,7 @@ export class SecureKeyGenerator {
   private async createSecureKeyDirectory(): Promise<void> {
     this.logger.info(`Ensuring key directory exists at '${this.keyPath}'.`);
     try {
+      if (!this.keyPath) return;
       if (!fs.existsSync(this.keyPath)) {
         this.logger.info(`Key directory does not exist. Creating directory at '${this.keyPath}'.`);
         await fs.promises.mkdir(this.keyPath, { recursive: true });
@@ -191,49 +194,56 @@ export class SecureKeyGenerator {
   private async saveKeys(tokenKeys: TokenKeyPairs): Promise<void> {
     this.logger.info("Starting to save generated token keys.");
     try {
-      await this.createSecureKeyDirectory();
+      let newEnv = {};
+      if (this.keyPath) {
+        await this.createSecureKeyDirectory();
 
-      // Define file paths for keys.
-      const accessPublicPath = path.join(this.keyPath, "access-public.pem");
-      const accessPrivatePath = path.join(this.keyPath, "access-private.pem");
-      const refreshPublicPath = path.join(this.keyPath, "refresh-public.pem");
-      const refreshPrivatePath = path.join(this.keyPath, "refresh-private.pem");
+        // Define file paths for keys.
+        const accessPublicPath = path.join(this.keyPath, "access-public.pem");
+        const accessPrivatePath = path.join(this.keyPath, "access-private.pem");
+        const refreshPublicPath = path.join(this.keyPath, "refresh-public.pem");
+        const refreshPrivatePath = path.join(this.keyPath, "refresh-private.pem");
 
-      // Save key files.
-      this.logger.info("Saving access token public key.");
-      await this.writeFileWithFallback(accessPublicPath, tokenKeys.access.publicKey, this.SECURE_FILE_PERMISSIONS);
+        // Save key files.
+        this.logger.info("Saving access token public key.");
+        await this.writeFileWithFallback(accessPublicPath, tokenKeys.access.publicKey, this.SECURE_FILE_PERMISSIONS);
 
-      this.logger.info("Saving access token private key.");
-      await this.writeFileWithFallback(accessPrivatePath, tokenKeys.access.privateKey, this.SECURE_FILE_PERMISSIONS);
+        this.logger.info("Saving access token private key.");
+        await this.writeFileWithFallback(accessPrivatePath, tokenKeys.access.privateKey, this.SECURE_FILE_PERMISSIONS);
 
-      this.logger.info("Saving refresh token public key.");
-      await this.writeFileWithFallback(refreshPublicPath, tokenKeys.refresh.publicKey, this.SECURE_FILE_PERMISSIONS);
+        this.logger.info("Saving refresh token public key.");
+        await this.writeFileWithFallback(refreshPublicPath, tokenKeys.refresh.publicKey, this.SECURE_FILE_PERMISSIONS);
 
-      this.logger.info("Saving refresh token private key.");
-      await this.writeFileWithFallback(refreshPrivatePath, tokenKeys.refresh.privateKey, this.SECURE_FILE_PERMISSIONS);
+        this.logger.info("Saving refresh token private key.");
+        await this.writeFileWithFallback(
+          refreshPrivatePath,
+          tokenKeys.refresh.privateKey,
+          this.SECURE_FILE_PERMISSIONS
+        );
 
-      // Load existing env variables.
-      this.logger.info(`Loading existing environment variables from '${this.envFileName}'.`);
-      const existingEnv = await this.loadExistingEnv();
+        // Load existing env variables.
+        this.logger.info(`Loading existing environment variables from '${this.envFileName}'.`);
+        const existingEnv = await this.loadExistingEnv();
+        newEnv = {
+          ...existingEnv,
+          ACCESS_TOKEN_PUBLIC_KEY_PATH: accessPublicPath,
+          ACCESS_TOKEN_PRIVATE_KEY_PATH: accessPrivatePath,
+          REFRESH_TOKEN_PUBLIC_KEY_PATH: refreshPublicPath,
+          REFRESH_TOKEN_PRIVATE_KEY_PATH: refreshPrivatePath,
+        };
+      }
 
       // Merge new key-related variables.
-      const newEnv = {
-        ...existingEnv,
-        ACCESS_TOKEN_PUBLIC_KEY_PATH: accessPublicPath,
-        ACCESS_TOKEN_PRIVATE_KEY_PATH: accessPrivatePath,
-        ACCESS_TOKEN_PRIVATE_KEY_PASSPHRASE: tokenKeys.access.passphrase,
+      newEnv = {
         ACCESS_TOKEN_PUBLIC_KEY: tokenKeys.access.publicKey,
         ACCESS_TOKEN_PRIVATE_KEY: tokenKeys.access.privateKey,
-        REFRESH_TOKEN_PUBLIC_KEY_PATH: refreshPublicPath,
-        REFRESH_TOKEN_PRIVATE_KEY_PATH: refreshPrivatePath,
-        REFRESH_TOKEN_PRIVATE_KEY_PASSPHRASE: tokenKeys.refresh.passphrase,
         REFRESH_TOKEN_PUBLIC_KEY: tokenKeys.refresh.publicKey,
         REFRESH_TOKEN_PRIVATE_KEY: tokenKeys.refresh.privateKey,
       };
 
       this.logger.info("Converting key variables to env file format.");
       const envContent = Object.entries(newEnv)
-        .map(([key, value]) => `${key}="${value.replace(/\n/g, "\\n")}"`)
+        .map(([key, value]) => `${key}="${(value as string).replace(/\n/g, "\\n")}"`)
         .join("\n");
 
       this.logger.step(`Writing updated environment variables to '${this.envFileName}'.`);

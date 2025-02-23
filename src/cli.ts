@@ -17,11 +17,11 @@ program
 const options = program.opts();
 
 const config = {
-  keyDirectory: options.keyDir,
+  keyDirectory: options.keyDir === "off" ? null : options.keyDir,
   envFileName: options.envFile,
   filePermissions: parseInt(options.permissions, 8),
   modulusLength: parseInt(options.modulus, 10),
-  logLevel: options.log === "all" ? "trace" : "warn",
+  logLevel: options.log === "off" ? "fatal" : options.log === "all" ? "trace" : "warn",
 };
 
 const generator = new SecureKeyGenerator(config);

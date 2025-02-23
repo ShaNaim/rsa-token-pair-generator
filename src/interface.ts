@@ -5,7 +5,6 @@ import pino from "pino";
 export interface KeyPair {
   publicKey: string;
   privateKey: string;
-  passphrase: string;
 }
 
 /**
@@ -28,8 +27,6 @@ export interface KeyGenerationOptions {
   privateKeyEncoding: {
     type: "pkcs8";
     format: "pem";
-    cipher: string;
-    passphrase: string;
   };
 }
 
