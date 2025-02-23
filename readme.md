@@ -3,7 +3,7 @@
 A secure CLI utility and library for generating RSA-2048/4096 cryptographic key pairs specifically designed for JWT-based authentication systems. Generates access/refresh token key pairs with enterprise-grade security practices and seamless environment integration.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![npm version](https://img.shields.io/npm/v/rsa-token-pair-generator)](https://www.npmjs.com/package/rsa-token-pair-generator)
+[![npm version](https://img.shields.io/npm/v/rsa-token-pair-generator)](https://www.npmjs.com/package/jwt-token-pair-generator)
 
 ## Features 🚀
 
@@ -59,13 +59,13 @@ generate-token \
 
 **Options**:
 
-| Flag                   | Description                                                 | Default                  |
-| ---------------------- | ----------------------------------------------------------- | ------------------------ |
-| `--keyDir <path>`      | Output directory for keys                                   | `secure-keys`            |
-| `--envFile <name>`     | Environment file to update                                  | `.env`                   |
-| `--modulus <bits>`     | RSA modulus length (2048/4096)                              | `2048`                   |
-| `--permissions <mode>` | File permission mode (octal)                                | `644`                    |
-| `--log <level>`        | Specifies the logging level for detailed execution tracking | `warn` / `step` (custom) |
+| Flag                   | Description                                                 | Default                  | Options                      |
+| ---------------------- | ----------------------------------------------------------- | ------------------------ | ---------------------------- |
+| `--keyDir <path>`      | Output directory for keys                                   | `secure-keys`            | `off`(files won't be saved ) |
+| `--envFile <name>`     | Environment file to update                                  | `.env`                   |                              |
+| `--modulus <bits>`     | RSA modulus length (2048/4096)                              | `2048`                   |                              |
+| `--permissions <mode>` | File permission mode (octal)                                | `644`                    |                              |
+| `--log <level>`        | Specifies the logging level for detailed execution tracking | `warn` / `step` (custom) | `all` (trace) `off`(No Logs) |
 
 **Example:**
 
@@ -105,28 +105,22 @@ The utility uses Pino for high-performance structured logging:
 
 ```json
 {
-  "level": 30,
-  "time": 1717029274665,
-  "pid": 12345,
-  "hostname": "server01",
-  "msg": "Generated RSA-4096 key pair",
-  "keyDir": "/app/keys",
-  "envFile": ".env.prod",
-  "keyType": "access_token"
+  "time": "2025-02-23T10:06:36.536Z",
+  "logLevel": "step",
+  "logMessage": "RSA token key pair generation process completed successfully."
 }
 ```
 
 **Log Levels**:
 
-- `fatal`: Critical security failures
-- `error`: Operational errors
-- `info`: Generation milestones
-- `debug`: Cryptographic details (enable for troubleshooting)
+- `all` [`warn`]: Cryptographic details (enable for troubleshooting)
+- `default` [`trace`]: Generation milestones
+- `off`: No Logs
 
 Enable debug logging:
 
 ```bash
-LOG_LEVEL=debug generate-token --modulus 4096
+generate-token --log all
 ```
 
 ## Development 🧑💻
