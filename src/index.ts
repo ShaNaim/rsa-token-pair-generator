@@ -195,6 +195,7 @@ export class SecureKeyGenerator {
     this.logger.info("Starting to save generated token keys.");
     try {
       let newEnv = {};
+      const existingEnv = await this.loadExistingEnv();
       if (this.keyPath) {
         await this.createSecureKeyDirectory();
 
@@ -223,7 +224,7 @@ export class SecureKeyGenerator {
 
         // Load existing env variables.
         this.logger.info(`Loading existing environment variables from '${this.envFileName}'.`);
-        const existingEnv = await this.loadExistingEnv();
+
         newEnv = {
           ...existingEnv,
           ACCESS_TOKEN_PUBLIC_KEY_PATH: accessPublicPath,
@@ -235,6 +236,7 @@ export class SecureKeyGenerator {
 
       // Merge new key-related variables.
       newEnv = {
+        ...existingEnv,
         ACCESS_TOKEN_PUBLIC_KEY: tokenKeys.access.publicKey,
         ACCESS_TOKEN_PRIVATE_KEY: tokenKeys.access.privateKey,
         REFRESH_TOKEN_PUBLIC_KEY: tokenKeys.refresh.publicKey,
